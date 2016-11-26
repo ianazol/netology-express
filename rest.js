@@ -17,11 +17,11 @@ function getUserIndex(id){
 app.post("/users", function(req, res){
 	let id = ++inc;
 	users.push({
-    	"id": id,
-        "name": req.body.name,
-        "score": req.body.score
-    });
-    res.json(users[users.length - 1]);
+		"id": id,
+	    "name": req.body.name,
+	    "score": req.body.score
+	});
+	res.json(users[users.length - 1]);
 });
 
 //read
