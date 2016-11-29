@@ -33,7 +33,7 @@ app.get("/users/:id", function(req, res){
 	} else {
 		let data = {};
 
-		if (!!req.query.fields){
+		if (req.query.fields){
 			let fields = req.query.fields.split(",");
 			fields.forEach((field) => data[field] = users[index][field]);
 		} else {
@@ -81,13 +81,13 @@ app.delete("/users/", function(req, res){
 app.get("/users", function(req, res){
 	let arUser = users.slice();
 
-	if (!!req.query.limit){
+	if (req.query.limit){
 		let limit = Number(req.query.limit);
 		let offset = Number(req.query.offset) || 0;
 		arUser = users.slice(offset, offset + limit);
 	}
 
-	if (!!req.query.fields){
+	if (req.query.fields){
 		let fields = req.query.fields.split(",");
 		let arResult = [];
 		arUser.forEach((user, index) => {
