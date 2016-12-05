@@ -1,107 +1,55 @@
 const express    = require("express");
 const bodyParser = require("body-parser");
+const user       = require("./rest-lib");
 const app        = express();
 const port       = process.env.PORT || 3000;
-
-let users = [];
-let inc = 0;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({"extended": true}));
 
-function getUserIndex(id){
-	return users.findIndex(user => user.id == id);
-}
-
 //create
 app.post("/users", function(req, res){
-	let id = ++inc;
-	users.push({
-		"id": id,
-	    "name": req.body.name,
-	    "score": req.body.score
-	});
-	res.json(users[users.length - 1]);
+	let result = user.create(req.body.name, req.body.score);
+	res.json(result);
 });
 
 //read
 app.get("/users/:id", function(req, res){
-	let index = getUserIndex(req.params.id);
-
-	if (index < 0){
+	let result = user.get(req.params.id, req.query.fields);
+	if (!result)
 		res.status(404).send('User not found');
-	} else {
-		let data = {};
-
-		if (req.query.fields){
-			let fields = req.query.fields.split(",");
-			fields.forEach((field) => data[field] = users[index][field]);
-		} else {
-			data = users[index];
-		}
-		res.json(data);
-	}
+	else
+		res.json(result);
 });
 
 //update
 app.put("/users/:id", function(req, res){
-	let index = getUserIndex(req.params.id);
-
-	if (index < 0){
+	let result = user.update(req.params.id, {name: req.body.name, score: req.body.score});
+	if (!result)
 		res.status(404).send('User not found');
-	} else {
-		if (req.body.name)
-			users[index].name = req.body.name;
-		if (req.body.score)
-			users[index].score = req.body.score;
-
-	    res.json(users[index]);
-	}
+	else
+		res.json(result);
 });
 
 //delete
 app.delete("/users/:id", function(req, res){
-	let index = getUserIndex(req.params.id);
-
-	if (index < 0){
+	let result = user.remove(req.params.id);
+	if (!result)
 		res.status(404).send('User not found');
-	} else {
-		users.splice(index, 1);
-		res.json({"deleted": "ok"});
-	}
+	else
+		res.json(result);
 });
 
 //delete all users
 app.delete("/users/", function(req, res){
-	users = [];
-	res.json({"deleted": "ok"});
+	let result = user.removeAll();
+	res.json(result);
 });
 
 //read all users
 app.get("/users", function(req, res){
-	let arUser = users.slice();
-
-	if (req.query.limit){
-		let limit = Number(req.query.limit);
-		let offset = Number(req.query.offset) || 0;
-		arUser = users.slice(offset, offset + limit);
-	}
-
-	if (req.query.fields){
-		let fields = req.query.fields.split(",");
-		let arResult = [];
-		arUser.forEach((user, index) => {
-			let userCopy = Object.assign({}, user);
-			for (prop in userCopy){
-				if (fields.indexOf(prop) == -1){
-					delete userCopy[prop];
-				}
-			}
-			arResult.push(userCopy);
-		});
-		arUser = arResult;
-	}
-	res.json(arUser);
+	let result = user.getAll(req.query.limit, req.query.offset, req.query.fields);
+	res.json(result);
 });
 
 app.use(function(req, res){
@@ -109,6 +57,7 @@ app.use(function(req, res){
 });
 
 app.use(function(err, req, res, next){
+	console.dir(err);
     res.status(500).send('500 Server Error');
 });
 
